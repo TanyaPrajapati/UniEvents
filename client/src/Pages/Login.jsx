@@ -23,22 +23,25 @@ function Login() {
 
       const data = await res.json();
 
-      // ✅ SINGLE BLOCK (fix)
+      
       if (data.success) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("role", data.role);
+  localStorage.setItem("token", data.token);
+  localStorage.setItem("role", data.role);
 
-        // 🔥 IMPORTANT FIX (reload instead of navigate)
-        window.location.href =
-          data.role === "faculty" ? "/admin" : "/events";
+ 
+  localStorage.setItem("isLoggedIn", "true");
+  localStorage.setItem("userEmail", form.email);
 
-      } else {
-        alert("Invalid credentials ❌");
+  
+  window.location.href =
+    data.role === "faculty" ? "/admin" : "/events";
+} else {
+        alert("Invalid credentials ");
       }
 
     } catch (err) {
       console.log(err);
-      alert("Something went wrong ❌");
+      alert("Something went wrong ");
     }
   };
 

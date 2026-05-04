@@ -1,5 +1,5 @@
 require("dotenv").config();
-// console.log(process.env);
+
 const path = require("path");
 const express = require("express");
 
@@ -18,27 +18,20 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const Groq = require("groq-sdk");
 
-app.use("/uploads", express.static("uploads")); 
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+});
 
-
-// const storage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     cb(null, "uploads/"); 
-//   },
-//   filename: (req, file, cb) => {
-//     cb(null, Date.now() + path.extname(file.originalname));
-//   },
-// });
-
-const upload = multer({ storage }); // 🔥 use Cloudinary storage
+const upload = multer({ storage }); 
 
 // DB connect
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("DB Connected to MongoDB"))
   .catch(err => console.log(err));
 
-// API routes
+
 app.get("/api/events", async (req, res) => {
   const events = await Event.find({});
 
@@ -67,7 +60,7 @@ app.post("/api/events", upload.single("image"), async (req, res) => {
       image: req.file ? req.file.path : "",   // ✅ only image URL/path
     });
 
-    console.log("SAVING IMAGE PATH:", newEvent.image);
+    
 
     await newEvent.save();
 
@@ -87,7 +80,7 @@ app.get("/api/events/:id", async (req, res) => {
 
   res.json({
     ...event.toObject(),
-    attendees: registrationsCount, // 🔥 real count
+    attendees: registrationsCount,
   });
 });
 
@@ -106,31 +99,59 @@ app.delete("/api/events/:id", async (req, res) => {
 
 app.post("/api/register", async (req, res) => {
   try {
-    const { name, email, eventId } = req.body;
+    const { name, email, eventId, userEmail } = req.body;
+
+    
+    if (!userEmail) {
+      return res.json({
+        success: false,
+        message: "Please login before participating ❌",
+      });
+    }
 
     const existing = await Registration.findOne({ email, eventId });
+
     if (existing) {
-      return res.json({ message: "Already Registered!" });
+      return res.json({
+        success: false,
+        message: "Already Registered!",
+      });
     }
 
     const event = await Event.findById(eventId);
 
-    // ✅ safety
-    if (!event.attendees) event.attendees = 0;
+    
+    const registrationsCount = await Registration.countDocuments({
+      eventId,
+    });
 
-    // ✅ seats full logic
-    if (event.attendees >= event.maxAttendees) {
-      return res.json({ message: "Seats Full" });
+    
+    if (registrationsCount >= event.maxAttendees) {
+      return res.json({
+        success: false,
+        message: "Seats Full",
+      });
     }
 
-    const newReg = new Registration({ name, email, eventId });
+    const newReg = new Registration({
+      name,
+      email,
+      eventId,
+    });
+
     await newReg.save();
 
-    res.json({ message: "Registered Successfully" });
+    res.json({
+      success: true,
+      message: "Registered Successfully",
+    });
 
   } catch (err) {
     console.log(err);
-    res.json({ message: "Error" });
+    res.json({
+      success: false,
+      message: "Error",
+    });
   }
 });
 
@@ -159,21 +180,6 @@ app.get("/api/admin/event/:id/registrations", async (req, res) => {
   }
 });
 
-app.post("/api/login", async (req, res) => {
-  const { email, password } = req.body;
-
-  const user = await User.findOne({ email, password });
-
-  if (!user) {
-    return res.json({ success: false, message: "Invalid credentials" });
-  }
-
-  res.json({
-    success: true,
-    role: user.role, // 🔥 important
-  });
-});
-
 
 
 
@@ -186,12 +192,155 @@ app.post("/api/register-user", async (req, res) => {
   res.json({ success: true });
 });
 
+app.post("/api/login", async (req, res) => {
+  const { email, password } = req.body;
 
-app.get("/", (req, res) => {
-  res.send("Server working ✅");
+  console.log("LOGIN DATA:", email, password);
+
+  const user = await User.findOne({ email, password });
+
+  console.log("FOUND USER:", user);
+
+  if (!user) {
+    return res.json({ success: false, message: "Invalid credentials" });
+  }
+
+  res.json({
+    success: true,
+    role: user.role,
+  });
 });
 
-// server
+
+app.post("/api/generate-description", async (req, res) => {
+  try {
+    console.log("AI REQUEST BODY:", req.body);
+
+    const { title, category, location, date } = req.body;
+
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are an expert event content writer. Generate a professional and attractive event description in 40-60 words.",
+        },
+        {
+          role: "user",
+          content: `Generate an event description for:
+          Title: ${title}
+          Category: ${category}
+          Location: ${location}
+          Date: ${date}`,
+        },
+      ],
+    });
+
+    console.log("AI RESPONSE:", completion);
+
+    const description =
+      completion.choices?.[0]?.message?.content || "";
+
+    res.json({ description });
+  } catch (err) {
+    console.log("AI ERROR:", err);
+    res.status(500).json({
+      message: "AI description generation failed",
+    });
+  }
+});
+
+
+
+app.post("/api/chatbot", async (req, res) => {
+  try {
+    const { message } = req.body;
+
+    const recentEvents = await Event.find()
+      .sort({ date: -1 })
+      .limit(5);
+
+    const eventText = recentEvents
+      .map(
+        (event) =>
+          `${event.title} - ${event.date} - ${event.location}`
+      )
+      .join("\n");
+
+    const response = await groq.chat.completions.create({
+      model: "llama-3.1-8b-instant",
+      messages: [
+        {
+          role: "system",
+          content: `You are UniEvents assistant.
+Recent events:
+${eventText}
+Answer only using these event details.`,
+        },
+        {
+          role: "user",
+          content: message,
+        },
+      ],
+    });
+
+    res.json({
+      reply: response.choices[0].message.content,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      reply: "Something went wrong ",
+    });
+  }
+});
+
+app.post("/api/recommend", async (req, res) => {
+  try {
+    const { interests } = req.body; 
+    
+
+    const events = await Event.find({});
+
+    
+    const scored = events.map((event) => {
+      let score = 0;
+
+      interests.forEach((interest) => {
+        if (
+          event.category?.toLowerCase().includes(interest.toLowerCase()) ||
+          event.title?.toLowerCase().includes(interest.toLowerCase())
+        ) {
+          score += 2;
+        }
+
+        if (event.description?.toLowerCase().includes(interest.toLowerCase())) {
+          score += 1;
+        }
+      });
+
+      return { ...event.toObject(), score };
+    });
+
+    
+    const recommended = scored
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5);
+
+    res.json(recommended);
+
+  } catch (err) {
+    res.status(500).json({ message: "Error" });
+  }
+});
+
+
+app.get("/", (req, res) => {
+  res.send("Server working ");
+});
+
+
 app.listen(3000, () => {
   console.log("Server running on 3000");
 });

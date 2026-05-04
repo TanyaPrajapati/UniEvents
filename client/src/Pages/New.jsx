@@ -11,10 +11,44 @@ function New() {
     date: "",
     deadline: "",
     price: "",
-    maxAttendees: "", // ✅ SAME rakha
+    maxAttendees: "",
     location: "",
     image: null,
   });
+
+  const generateDescription = async () => {
+    try {
+      console.log("SENDING:", event);
+
+      const res = await fetch(
+        "http://localhost:3000/api/generate-description",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: event.title,
+            category: event.category,
+            location: event.location,
+            date: event.date,
+          }),
+        },
+      );
+
+      const data = await res.json();
+
+      console.log("AI DATA:", data);
+
+      setEvent((prev) => ({
+        ...prev,
+        description: data.description,
+      }));
+    } catch (err) {
+      console.log("FRONTEND ERROR:", err);
+      alert("AI generation failed ");
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -26,33 +60,33 @@ function New() {
     }
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  const formData = new FormData();
-  for (let key in event) {
-    formData.append(key, event[key]);
-  }
-
-  try {
-    const res = await fetch("http://localhost:3000/api/events", {
-      method: "POST",
-      body: formData, // ✅ FIX
-    });
-
-    const data = await res.json();
-
-    if (data.message === "Event Created") {
-      alert("Event Created ✅");
-      navigate("/events");
-    } else {
-      alert("Error creating event ❌");
+    const formData = new FormData();
+    for (let key in event) {
+      formData.append(key, event[key]);
     }
-  } catch (err) {
-    console.log(err);
-    alert("Something went wrong ❌");
-  }
-};
+
+    try {
+      const res = await fetch("http://localhost:3000/api/events", {
+        method: "POST",
+        body: formData, 
+      });
+
+      const data = await res.json();
+
+      if (data.message === "Event Created") {
+        alert("Event Created ");
+        navigate("/events");
+      } else {
+        alert("Error creating event ");
+      }
+    } catch (err) {
+      console.log(err);
+      alert("Something went wrong ");
+    }
+  };
   return (
     <div className="create-event-wrapper">
       <div className="form-card">
@@ -66,11 +100,23 @@ const handleSubmit = async (e) => {
             required
           />
           <textarea
-            name="description"
-            placeholder="Description"
-            onChange={handleChange}
-            required
+            className="form-control"
+            rows="4"
+            value={event.description}
+            onChange={(e) =>
+              setEvent({
+                ...event,
+                description: e.target.value,
+              })
+            }
           />
+          <button
+            type="button mb-2"
+            className="btn btn-info"
+            onClick={generateDescription}
+          >
+            Generate Description with AI 
+          </button> 
           <input
             name="category"
             placeholder="Category"

@@ -11,69 +11,79 @@ function RegisterForm({ eventId, refreshEvent, closeForm }) {
   const [alreadyRegistered, setAlreadyRegistered] = useState(false);
 
   const checkRegistration = async (email) => {
-  const res = await fetch(
-    `http://localhost:3000/api/check-registration?email=${email}&eventId=${eventId}`
-  );
-
-  const data = await res.json();
-  setAlreadyRegistered(data.registered);
-};
-
- const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-
-  try {
-    const res = await fetch("http://localhost:3000/api/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: form.name,
-        email: form.email,
-        eventId,
-      }),
-    });
-
-    // 🔥 IMPORTANT FIX
-    if (!res.ok) {
-      throw new Error("Response not OK");
-    }
+    const res = await fetch(
+      `http://localhost:3000/api/check-registration?email=${email}&eventId=${eventId}`
+    );
 
     const data = await res.json();
+    setAlreadyRegistered(data.registered);
+  };
 
-    console.log("DATA:", data); // debug
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-    setMessage(data.message || "Done");
+    
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
 
-    if (data.message && data.message.toLowerCase().includes("success")) {
-      refreshEvent();
-      setForm({ name: "", email: "" });
-
-      setTimeout(() => {
-        closeForm();
-      }, 1500);
+    if (!isLoggedIn) {
+      setMessage("Please login before participating ");
+      return;
     }
 
-  } catch (err) {
-    console.log("ERROR:", err); // 🔥 THIS WILL SHOW REAL ISSUE
-    setMessage("Something went wrong ❌");
-  }
+    setLoading(true);
 
-  setLoading(false);
-};
+    try {
+      const res = await fetch("http://localhost:3000/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          eventId,
+          userEmail: localStorage.getItem("userEmail"),
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Response not OK");
+      }
+
+      const data = await res.json();
+
+      console.log("DATA:", data);
+
+      setMessage(data.message || "Done");
+
+      if (
+        data.message &&
+        data.message.toLowerCase().includes("success")
+      ) {
+        refreshEvent();
+        setForm({ name: "", email: "" });
+
+        setTimeout(() => {
+          closeForm();
+        }, 1500);
+      }
+    } catch (err) {
+      console.log("ERROR:", err);
+      setMessage("Something went wrong ");
+    }
+
+    setLoading(false);
+  };
 
   return (
     <form onSubmit={handleSubmit}>
 
-      {/* ✅ MESSAGE ALERT */}
-
+     
       {alreadyRegistered && (
-    <div className="alert alert-warning">
-      ⚠️ You already registered for this event
-    </div>
-  )}
+        <div className="alert alert-warning">
+          ⚠️ You already registered for this event
+        </div>
+      )}
 
       {message && (
         <div
@@ -87,7 +97,7 @@ function RegisterForm({ eventId, refreshEvent, closeForm }) {
         </div>
       )}
 
-      {/* NAME */}
+      
       <input
         type="text"
         placeholder="Name"
@@ -96,32 +106,33 @@ function RegisterForm({ eventId, refreshEvent, closeForm }) {
         onChange={(e) =>
           setForm({ ...form, name: e.target.value })
         }
+        required
       />
 
-      {/* EMAIL */}
+      
       <input
-  type="email"
-  placeholder="Email"
-  className="form-control mb-2"
-  value={form.email}
-  onChange={(e) => {
-    setForm({ ...form, email: e.target.value });
-    checkRegistration(e.target.value); // 👈 yahi add karna hai
-  }}
-/>
+        type="email"
+        placeholder="Email"
+        className="form-control mb-2"
+        value={form.email}
+        onChange={(e) => {
+          setForm({ ...form, email: e.target.value });
+          checkRegistration(e.target.value);
+        }}
+        required
+      />
 
-      {/* BUTTON */}
-     <button
-  className="btn btn-success w-100"
-  disabled={loading || alreadyRegistered}
->
-  {alreadyRegistered
-    ? "Already Registered"
-    : loading
-    ? "Registering..."
-    : "Register"}
-</button>
-
+      
+      <button
+        className="btn btn-success w-100"
+        disabled={loading || alreadyRegistered}
+      >
+        {alreadyRegistered
+          ? "Already Registered"
+          : loading
+          ? "Registering..."
+          : "Register"}
+      </button>
     </form>
   );
 }

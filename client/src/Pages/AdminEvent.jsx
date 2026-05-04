@@ -17,8 +17,8 @@ function AdminEvent() {
 
       {users.map((u) => (
         <div key={u._id} className="card p-2 mb-2">
-          <p>{u.name}</p>
-          <p>{u.email}</p>
+          <p>Name: {u.name}</p>
+          <p>Email: {u.email}</p>
         </div>
       ))}
     </div>

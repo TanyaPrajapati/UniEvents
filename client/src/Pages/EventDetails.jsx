@@ -1,24 +1,44 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import RegisterForm from "./RegisterForm";
 
 function EventDetails() {
   const { id } = useParams();
-
+const navigate = useNavigate();
   const [event, setEvent] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
-  // ✅ NEW FUNCTION (same logic, bas separate kiya)
+  
   const fetchEvent = () => {
     fetch(`http://localhost:3000/api/events/${id}`)
       .then((res) => res.json())
       .then((data) => setEvent(data));
   };
 
-  // ✅ UPDATED useEffect
+ const handleParticipate = () => {
+  const token = localStorage.getItem("token");
+  const isLoggedIn = localStorage.getItem("isLoggedIn");
+
+  console.log("TOKEN:", token);
+  console.log("LOGIN STATUS:", isLoggedIn);
+
+  if (!token || isLoggedIn !== "true") {
+    alert("Please login before participating ");
+    navigate("/login");
+    return;
+  }
+
+  setShowForm(!showForm);
+};
+
+
   useEffect(() => {
     fetchEvent();
   }, [id]);
+
+
+
+
 
   if (!event) return <h3 className="text-center mt-5">Loading...</h3>;
 
@@ -27,7 +47,7 @@ function EventDetails() {
       
       <div className="card shadow-lg event-detail-card">
 
-        {/* IMAGE */}
+       
         <div className="event-img-wrapper">
          <div className="event-img-wrapper">
   <img src={event.image} 
@@ -42,7 +62,7 @@ function EventDetails() {
           </div>
         </div>
 
-        {/* BODY */}
+        
         <div className="card-body">
           <p className="text-muted">{event.description}</p>
 
@@ -64,11 +84,10 @@ function EventDetails() {
             </div>
           </div>
 
-          {/* BUTTON */}
           <button
             className="btn btn-dark w-100 mt-3"
             disabled={event.attendees >= event.maxAttendees}
-            onClick={() => setShowForm(!showForm)}
+            onClick={handleParticipate}
           >
             {event.attendees >= event.maxAttendees
               ? "Seats Full"
@@ -79,7 +98,7 @@ function EventDetails() {
         </div>
       </div>
 
-      {/* FORM */}
+     
       {showForm && (
         <div className="modal d-block" tabIndex="-1">
           <div className="modal-dialog">

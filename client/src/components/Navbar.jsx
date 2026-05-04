@@ -1,11 +1,10 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-function Navbar() {
 
+function Navbar() {
   const [role, setRole] = useState(localStorage.getItem("role"));
 
-  // 🔥 FIX: listen for changes
   useEffect(() => {
     const checkRole = () => {
       setRole(localStorage.getItem("role"));
@@ -16,19 +15,25 @@ function Navbar() {
     return () => window.removeEventListener("storage", checkRole);
   }, []);
 
-  // ✅ logout function
   const handleLogout = () => {
     localStorage.removeItem("role");
-    setRole(null); // 🔥 instant update
-    window.location.href = "/"; // refresh
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("userEmail");
+    setRole(null);
+    window.location.href = "/";
   };
 
   return (
-    <nav className="navbar navbar-expand-md bg-light border-bottom sticky-top ">
-      <div className="container-fluid">
+    <nav className="navbar navbar-expand-md custom-navbar sticky-top">
+      <div className="container-fluid px-4">
 
-        <Link className="navbar-brand" to="/">
-          <img src="/images/logo.png" alt="logo" style={{ height: "50px" }} />
+        <Link className="navbar-brand d-flex align-items-center" to="/">
+          <img
+            src="/images/logo.png"
+            alt="logo"
+            className="nav-logo"
+          />
+          
         </Link>
 
         <button
@@ -41,46 +46,68 @@ function Navbar() {
         </button>
 
         <div className="collapse navbar-collapse" id="navbarNavAltMarkup">
-        <div className="navbar-nav">
+          <div className="navbar-nav ms-auto align-items-center gap-3">
 
-  {/* 👨‍🎓 STUDENT */}
-  {role === "student" && (
-    <>
-      <Link className="nav-link" to="/">Home</Link>
-      <Link className="nav-link" to="/events">Explore Events</Link>
+            
+            {role === "student" && (
+              <>
+                <Link className="nav-link custom-link" to="/">
+                  Home
+                </Link>
+                <Link className="nav-link custom-link" to="/events">
+                  Explore Events
+                </Link>
 
-      <button className="btn btn-sm btn-danger ms-2" onClick={handleLogout}>
-        Logout
-      </button>
-    </>
-  )}
+                <button
+                  className="btn logout-btn"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </button>
+              </>
+            )}
 
-  {/* 👨‍🏫 FACULTY */}
-  {role === "faculty" && (
-    <>
-      <Link className="nav-link" to="/">Home</Link>
-      <Link className="nav-link" to="/admin">Dashboard</Link>
-      <Link className="nav-link" to="/events/new">Host Event</Link>
+            
+            {role === "faculty" && (
+              <>
+                <Link className="nav-link custom-link" to="/">
+                  Home
+                </Link>
+                <Link className="nav-link custom-link" to="/admin">
+                  Dashboard
+                </Link>
+                <Link className="nav-link custom-link" to="/events/new">
+                  Host Event
+                </Link>
 
-      <button className="btn btn-sm btn-danger ms-2" onClick={handleLogout}>
-        Logout
-      </button>
-    </>
-  )}
+                <button
+                  className="btn logout-btn"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </button>
+              </>
+            )}
 
-  {/* ❌ NOT LOGGED IN */}
-  {!role && (
-    <>
-      <Link className="nav-link" to="/">Home</Link>
-      <Link className="nav-link" to="/events">Explore Events</Link>
-      <Link className="nav-link" to="/login">Login</Link>
-      <Link className="nav-link" to="/register">Register</Link>
-    </>
-  )}
-
-</div>
+            
+            {!role && (
+              <>
+                <Link className="nav-link custom-link" to="/">
+                  Home
+                </Link>
+                <Link className="nav-link custom-link" to="/events">
+                  Explore Events
+                </Link>
+                <Link className="nav-link custom-link" to="/login">
+                  Login
+                </Link>
+                <Link className="nav-link custom-link" to="/register">
+                  Register
+                </Link>
+              </>
+            )}
+          </div>
         </div>
-
       </div>
     </nav>
   );

@@ -23,7 +23,7 @@ function Events() {
           >
             <div className="card h-100 shadow-sm card-col">
 
-              {/* Image */}
+             
             <img
   src={event.image}
   className="card-img-top"

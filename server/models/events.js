@@ -20,7 +20,7 @@ const eventSchema=new Schema({
   type: Number,
   default: 0,
 },
- maxAttendees: {   // 👈 YE ADD KARO
+ maxAttendees: {   
     type: Number,
     required: true
   },

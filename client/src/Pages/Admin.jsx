@@ -1,15 +1,13 @@
-/* eslint-disable no-restricted-globals */
-
-
 import { useEffect, useState } from "react";
+
 
 function Admin() {
   const [events, setEvents] = useState([]);
 
   const fetchEvents = () => {
     fetch("http://localhost:3000/api/events")
-      .then(res => res.json())
-      .then(data => setEvents(data));
+      .then((res) => res.json())
+      .then((data) => setEvents(data));
   };
 
   useEffect(() => {
@@ -17,79 +15,81 @@ function Admin() {
   }, []);
 
   const deleteEvent = async (id) => {
-  const confirmDelete = window.confirm("Are you sure?");
-  if (!confirmDelete) return;
+    const confirmDelete = window.confirm("Are you sure?");
+    if (!confirmDelete) return;
 
-  await fetch(`http://localhost:3000/api/events/${id}`, {
-    method: "DELETE",
-  });
+    await fetch(`http://localhost:3000/api/events/${id}`, {
+      method: "DELETE",
+    });
 
-  // 🔥 refresh events
-  setEvents(events.filter((e) => e._id !== id));
-};
+    setEvents(events.filter((e) => e._id !== id));
+  };
 
+  const exportCSV = async (eventId) => {
+    const res = await fetch(
+      `http://localhost:3000/api/admin/event/${eventId}/registrations`
+    );
 
-const exportCSV = async (eventId) => {
-  const res = await fetch(
-    `http://localhost:3000/api/admin/event/${eventId}/registrations`
-  );
+    const data = await res.json();
 
-  const data = await res.json();
+    const csv = [
+      ["Name", "Email"],
+      ...data.map((r) => [r.name, r.email]),
+    ]
+      .map((row) => row.join(","))
+      .join("\n");
 
-  // CSV format
-  const csv = [
-    ["Name", "Email"],
-    ...data.map((r) => [r.name, r.email]),
-  ]
-    .map((row) => row.join(","))
-    .join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
 
-  const blob = new Blob([csv], { type: "text/csv" });
-  const url = window.URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "participants.csv";
-  a.click();
-};
-
-
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "participants.csv";
+    a.click();
+  };
 
   return (
-    <div className="container mt-4">
-      <h2>Admin Dashboard</h2>
+    <div className="admin-page">
+      <div className="container py-5">
+        <h2 className="dashboard-title">Admin Dashboard</h2>
 
-    {events.map((e) => (
-  <div key={e._id} className="card p-3 mb-2 dashboard-card">
-    <h4>{e.title}</h4>
-    <p>👥 {e.attendees} / {e.maxAttendees}</p>
+        <div className="row">
+          {events.map((e) => (
+            <div key={e._id} className="col-md-6 col-lg-4 mb-4">
+              <div className="dashboard-card">
+                <h4>{e.title}</h4>
 
-    <button
-      className="btn btn-primary "
-      onClick={() =>
-        window.location.href = `/admin/event/${e._id}`
-      }
-    >
-      View Participants
-    </button>
+                <p className="attendees-text">
+                  👥 {e.attendees} / {e.maxAttendees}
+                </p>
 
-    {/* ✅ SAME e use karo */}
-    <button
-      className="btn btn-success mt-2 w-100"
-      onClick={() => exportCSV(e._id)}
-    >
-      Export Participants
-    </button>
+                <button
+                  className="btn dashboard-btn view-btn"
+                  onClick={() =>
+                    (window.location.href = `/admin/event/${e._id}`)
+                  }
+                >
+                  View Participants
+                </button>
 
-    <button
-      className="btn btn-danger mt-2 w-100"
-      onClick={() => deleteEvent(e._id)}
-    >
-      Delete Event
-    </button>
+                <button
+                  className="btn dashboard-btn export-btn"
+                  onClick={() => exportCSV(e._id)}
+                >
+                  Export Participants
+                </button>
 
-  </div>
-))}
+                <button
+                  className="btn dashboard-btn delete-btn"
+                  onClick={() => deleteEvent(e._id)}
+                >
+                  Delete Event
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

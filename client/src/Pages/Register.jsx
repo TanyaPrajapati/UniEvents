@@ -25,14 +25,14 @@ function Register() {
       const data = await res.json();
 
       if (data.success) {
-        alert("Registered Successfully ✅");
+        alert("Registered Successfully ");
         navigate("/login");
       } else {
-        alert(data.message || "Error ❌");
+        alert(data.message || "Error ");
       }
 
     } catch (err) {
-      alert("Something went wrong ❌");
+      alert("Something went wrong ");
     }
   };
 
