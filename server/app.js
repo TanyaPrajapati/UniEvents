@@ -1,10 +1,10 @@
 require("dotenv").config();
 
-
+const cors = require("cors");
 const express = require("express");
 
 const mongoose = require("mongoose");
-const cors = require("cors");
+
 const Event = require("./models/events.js");
 const Registration = require("./models/Registration");
 
