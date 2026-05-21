@@ -4,65 +4,50 @@ import RegisterForm from "./RegisterForm";
 
 function EventDetails() {
   const { id } = useParams();
-const navigate = useNavigate();
+  const navigate = useNavigate();
+
   const [event, setEvent] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
-  
-  const fetchEvent = () => {
-    fetch(`http://localhost:3000/api/events/${id}`)
-      .then((res) => res.json())
-      .then((data) => setEvent(data));
+  const handleParticipate = () => {
+    const token = localStorage.getItem("token");
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
+
+    console.log("TOKEN:", token);
+    console.log("LOGIN STATUS:", isLoggedIn);
+
+    if (!token || isLoggedIn !== "true") {
+      alert("Please login before participating ");
+      navigate("/login");
+      return;
+    }
+
+    setShowForm(!showForm);
   };
 
- const handleParticipate = () => {
-  const token = localStorage.getItem("token");
-  const isLoggedIn = localStorage.getItem("isLoggedIn");
-
-  console.log("TOKEN:", token);
-  console.log("LOGIN STATUS:", isLoggedIn);
-
-  if (!token || isLoggedIn !== "true") {
-    alert("Please login before participating ");
-    navigate("/login");
-    return;
-  }
-
-  setShowForm(!showForm);
-};
-
-
   useEffect(() => {
+    const fetchEvent = () => {
+      fetch(`http://localhost:3000/api/events/${id}`)
+        .then((res) => res.json())
+        .then((data) => setEvent(data));
+    };
+
     fetchEvent();
   }, [id]);
-
-
-
-
 
   if (!event) return <h3 className="text-center mt-5">Loading...</h3>;
 
   return (
     <div className="container mt-5 d-flex justify-content-center">
-      
       <div className="card shadow-lg event-detail-card">
-
-       
         <div className="event-img-wrapper">
-         <div className="event-img-wrapper">
-  <img src={event.image} 
-    alt="event"
-  />
-  <div className="event-overlay">
-    <h2>{event.title}</h2>
-  </div>
-</div>
+          <img src={event.image} alt="event" />
+
           <div className="event-overlay">
             <h2>{event.title}</h2>
           </div>
         </div>
 
-        
         <div className="card-body">
           <p className="text-muted">{event.description}</p>
 
@@ -73,12 +58,25 @@ const navigate = useNavigate();
           <div className="row">
             <div className="col-md-6">
               <p><b>Category:</b> {event.category}</p>
-              <p><b>Date:</b> {event.date ? new Date(event.date).toLocaleDateString() : "N/A"}</p>
+
+              <p>
+                <b>Date:</b>{" "}
+                {event.date
+                  ? new Date(event.date).toLocaleDateString()
+                  : "N/A"}
+              </p>
+
               <p><b>Location:</b> {event.location}</p>
             </div>
 
             <div className="col-md-6">
-              <p><b>Deadline:</b> {event.deadline ? new Date(event.deadline).toLocaleDateString() : "N/A"}</p>
+              <p>
+                <b>Deadline:</b>{" "}
+                {event.deadline
+                  ? new Date(event.deadline).toLocaleDateString()
+                  : "N/A"}
+              </p>
+
               <p><b>Price:</b> ₹{event.price}</p>
               <p><b>Attendees:</b> {event.attendees}</p>
             </div>
@@ -98,18 +96,16 @@ const navigate = useNavigate();
         </div>
       </div>
 
-     
       {showForm && (
         <div className="modal d-block" tabIndex="-1">
           <div className="modal-dialog">
             <div className="modal-content p-3">
-              
               <h4>Register</h4>
 
-              <RegisterForm 
-                eventId={id} 
-                refreshEvent={fetchEvent}   
-                closeForm={() => setShowForm(false)} 
+              <RegisterForm
+                eventId={id}
+                refreshEvent={() => window.location.reload()}
+                closeForm={() => setShowForm(false)}
               />
 
               <button
@@ -118,7 +114,6 @@ const navigate = useNavigate();
               >
                 Close
               </button>
-
             </div>
           </div>
         </div>
