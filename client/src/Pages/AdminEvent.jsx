@@ -6,7 +6,7 @@ function AdminEvent() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/registrations`)
+    fetch(`${process.env.REACT_APP_API_URL}/registrations`)
       .then(res => res.json())
       .then(data => setUsers(data));
   }, [id]);

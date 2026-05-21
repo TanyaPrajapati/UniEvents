@@ -14,7 +14,7 @@ function Register() {
     e.preventDefault();
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/register-user`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/register-user`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -61,7 +61,7 @@ function Register() {
           }
         />
 
-        {/* 🔥 ROLE SELECT */}
+       
         <select
           className="form-control mb-2"
           onChange={(e) =>

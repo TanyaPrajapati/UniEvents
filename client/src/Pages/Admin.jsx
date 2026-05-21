@@ -5,7 +5,7 @@ function Admin() {
   const [events, setEvents] = useState([]);
 
   const fetchEvents = () => {
-    fetch(`${import.meta.env.VITE_API_URL}/api/register-user`)
+    fetch(`${process.env.REACT_APP_API_URL}/api/register-user`)
       .then((res) => res.json())
       .then((data) => setEvents(data));
   };
@@ -18,7 +18,7 @@ function Admin() {
     const confirmDelete = window.confirm("Are you sure?");
     if (!confirmDelete) return;
 
-    await fetch(`${import.meta.env.VITE_API_URL}/api/events/${id}`, {
+    await fetch(`${process.env.REACT_APP_API_URL}/api/events/${id}`, {
       method: "DELETE",
     });
 
@@ -27,7 +27,7 @@ function Admin() {
 
   const exportCSV = async (eventId) => {
     const res = await fetch(
-      `http://localhost:3000/api/admin/event/${eventId}/registrations`
+      `${process.env.REACT_APP_API_URL}/api/admin/event/${eventId}/registrations`
     );
 
     const data = await res.json();

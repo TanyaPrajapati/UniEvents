@@ -21,7 +21,7 @@ function New() {
       console.log("SENDING:", event);
 
       const res = await fetch(
-       `${import.meta.env.VITE_API_URL}/api/generate-description`,
+       `${process.env.REACT_APP_API_URL}/api/generate-description`,
         {
           method: "POST",
           headers: {
@@ -69,7 +69,7 @@ function New() {
     }
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/events`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/events`, {
         method: "POST",
         body: formData, 
       });

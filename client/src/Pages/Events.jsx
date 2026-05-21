@@ -5,7 +5,7 @@ function Events() {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/api/events`)
+    fetch(`${process.env.REACT_APP_API_URL}/api/events`)
       .then((res) => res.json())
       .then((data) => setEvents(data))
       .catch((err) => console.log(err));

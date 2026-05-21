@@ -57,7 +57,7 @@ app.post("/api/events", upload.single("image"), async (req, res) => {
 
     const newEvent = new Event({
       ...req.body,
-      image: req.file ? req.file.path : "",   // ✅ only image URL/path
+      image: req.file ? req.file.path : "",   
     });
 
     
