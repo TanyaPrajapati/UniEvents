@@ -12,7 +12,7 @@ function RegisterForm({ eventId, refreshEvent, closeForm }) {
 
   const checkRegistration = async (email) => {
     const res = await fetch(
-      `http://localhost:3000/api/check-registration?email=${email}&eventId=${eventId}`
+      `${import.meta.env.VITE_API_URL}/api/check-registration?email=${email}&eventId=${eventId}`
     );
 
     const data = await res.json();
@@ -33,7 +33,7 @@ function RegisterForm({ eventId, refreshEvent, closeForm }) {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:3000/api/register", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

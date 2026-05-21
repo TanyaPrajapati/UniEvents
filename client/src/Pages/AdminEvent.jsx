@@ -6,7 +6,7 @@ function AdminEvent() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    fetch(`http://localhost:3000/api/admin/event/${id}/registrations`)
+    fetch(`${import.meta.env.VITE_API_URL}/registrations`)
       .then(res => res.json())
       .then(data => setUsers(data));
   }, [id]);

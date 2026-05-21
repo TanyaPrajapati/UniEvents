@@ -5,7 +5,7 @@ function Admin() {
   const [events, setEvents] = useState([]);
 
   const fetchEvents = () => {
-    fetch("http://localhost:3000/api/events")
+    fetch(`${import.meta.env.VITE_API_URL}/api/register-user`)
       .then((res) => res.json())
       .then((data) => setEvents(data));
   };
@@ -18,7 +18,7 @@ function Admin() {
     const confirmDelete = window.confirm("Are you sure?");
     if (!confirmDelete) return;
 
-    await fetch(`http://localhost:3000/api/events/${id}`, {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/events/${id}`, {
       method: "DELETE",
     });
 

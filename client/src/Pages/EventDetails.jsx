@@ -27,7 +27,7 @@ function EventDetails() {
 
   useEffect(() => {
     const fetchEvent = () => {
-      fetch(`http://localhost:3000/api/events/${id}`)
+      fetch(`${import.meta.env.VITE_API_URL}/api/events/${id}`)
         .then((res) => res.json())
         .then((data) => setEvent(data));
     };
