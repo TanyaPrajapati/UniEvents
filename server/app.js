@@ -1,21 +1,29 @@
 require("dotenv").config();
 
-const path = require("path");
+
 const express = require("express");
 
 const mongoose = require("mongoose");
 const cors = require("cors");
 const Event = require("./models/events.js");
 const Registration = require("./models/Registration");
-const jwt = require("jsonwebtoken");
+
 const User = require("./models/User");
-const SECRET = "mysecretkey";
+
 const multer = require("multer");
 const { storage } = require("./CloudCofig.js");
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://uni-events-tan.vercel.app/",
+    ],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 const Groq = require("groq-sdk");
@@ -337,10 +345,12 @@ app.post("/api/recommend", async (req, res) => {
 
 
 app.get("/", (req, res) => {
-  res.send("Server working ");
+  res.send("UniEvents Backend Running 🚀");
 });
 
 
-app.listen(3000, () => {
-  console.log("Server running on 3000");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on ${PORT}`);
 });
