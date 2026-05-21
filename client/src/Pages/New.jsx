@@ -21,7 +21,7 @@ function New() {
       console.log("SENDING:", event);
 
       const res = await fetch(
-       "${import.meta.env.VITE_API_URL}/api/generate-description",
+       `${import.meta.env.VITE_API_URL}/api/generate-description`,
         {
           method: "POST",
           headers: {
