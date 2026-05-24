@@ -12,7 +12,7 @@ function Chatbot() {
     const newChat = [...chat, { type: "user", text: message }];
     setChat(newChat);
 
-    const res = await fetch("http://localhost:3000/api/chatbot", {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/chatbot`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
