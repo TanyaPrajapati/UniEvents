@@ -118,7 +118,13 @@ app.post("/api/register", async (req, res) => {
       });
     }
 
-    const existing = await Registration.findOne({ email, eventId });
+    
+    const cleanEmail = email.trim().toLowerCase();
+
+    const existing = await Registration.findOne({
+      email: cleanEmail,
+      eventId,
+    });
 
     if (existing) {
       return res.json({
@@ -127,14 +133,22 @@ app.post("/api/register", async (req, res) => {
       });
     }
 
+   
     const event = await Event.findById(eventId);
+
+    if (!event) {
+      return res.json({
+        success: false,
+        message: "Event not found",
+      });
+    }
 
     
     const registrationsCount = await Registration.countDocuments({
       eventId,
     });
 
-    
+   
     if (registrationsCount >= event.maxAttendees) {
       return res.json({
         success: false,
@@ -142,9 +156,10 @@ app.post("/api/register", async (req, res) => {
       });
     }
 
+    
     const newReg = new Registration({
       name,
-      email,
+      email: cleanEmail,
       eventId,
     });
 
@@ -157,9 +172,10 @@ app.post("/api/register", async (req, res) => {
 
   } catch (err) {
     console.log(err);
-    res.json({
+
+    res.status(500).json({
       success: false,
-      message: "Error",
+      message: "Server Error",
     });
   }
 });
@@ -167,7 +183,12 @@ app.post("/api/register", async (req, res) => {
 app.get("/api/check-registration", async (req, res) => {
   const { email, eventId } = req.query;
 
-  const existing = await Registration.findOne({ email, eventId });
+  const cleanEmail = email.trim().toLowerCase();
+
+  const existing = await Registration.findOne({
+    email: cleanEmail,
+    eventId,
+  });
 
   if (existing) {
     return res.json({ registered: true });
@@ -175,7 +196,6 @@ app.get("/api/check-registration", async (req, res) => {
     return res.json({ registered: false });
   }
 });
-
 
 app.get("/api/admin/event/:id/registrations", async (req, res) => {
   try {
