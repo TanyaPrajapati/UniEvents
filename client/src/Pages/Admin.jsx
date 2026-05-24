@@ -5,7 +5,7 @@ function Admin() {
   const [events, setEvents] = useState([]);
 
   const fetchEvents = () => {
-    fetch(`${process.env.REACT_APP_API_URL}/api/register-user`)
+    fetch(`${process.env.REACT_APP_API_URL}/api/events`)
       .then((res) => res.json())
       .then((data) => setEvents(data));
   };
