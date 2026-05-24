@@ -29,7 +29,7 @@ function Navbar() {
 
         <Link className="navbar-brand d-flex align-items-center" to="/">
           <img
-            src="/images/logo.png"
+            src="/logo.png"
             alt="logo"
             className="nav-logo"
           />
